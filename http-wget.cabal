@@ -1,0 +1,18 @@
+name:            http-wget
+version:         0.0.0
+license:         BSD3
+license-file:    LICENSE
+author:          Michael Snoyman <michael@snoyman.com>
+maintainer:      Michael Snoyman <michael@snoyman.com>
+synopsis:        Provide a simple HTTP client interface by wrapping the wget
+                 command line tool.
+category:        Network
+stability:       stable
+cabal-version:   >= 1.2
+build-type:      Simple
+website:         http://github.com/snoyberg/http-wget/tree/master
+
+library
+    build-depends:   base, process
+    exposed-modules: Network.HTTP.Wget
+    ghc-options:     -Wall
