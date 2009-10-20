@@ -1,5 +1,5 @@
 name:            http-wget
-version:         0.0.0
+version:         0.2.0
 license:         BSD3
 license-file:    LICENSE
 author:          Michael Snoyman <michael@snoyman.com>
@@ -17,6 +17,10 @@ build-type:      Simple
 homepage:        http://github.com/snoyberg/http-wget/tree/master
 
 library
-    build-depends:   base, process
+    build-depends:   base >= 4 && < 5,
+                     process,
+                     attempt,
+                     transformers >= 0.1.4.0,
+                     syb
     exposed-modules: Network.HTTP.Wget
     ghc-options:     -Wall

@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 ---------------------------------------------------------
 -- |
 -- Module        : Network.HTTP.Wget
@@ -20,13 +21,21 @@ import System.Exit
 import System.IO
 import Numeric (showHex)
 import Data.List (intercalate)
+import Control.Monad.Trans
+import Control.Monad.Attempt.Class
+import Control.Exception
+import Data.Generics
+
+newtype WgetError = WgetError String
+    deriving (Show, Typeable)
+instance Exception WgetError
 
 -- | Get a response from the given URL with the given parameters.
-wget :: Monad m
+wget :: (MonadIO m, MonadAttempt m)
      => String -- ^ The URL.
      -> [(String, String)] -- ^ Get parameters.
      -> [(String, String)] -- ^ Post parameters. If empty, this will be a get request.
-     -> IO (m String) -- ^ The response body.
+     -> m String -- ^ The response body.
 wget url get post = do
     let getSepChar :: Char
         getSepChar = if '?' `elem` url then '&' else '?'
@@ -36,13 +45,14 @@ wget url get post = do
         post' = if null post
                     then []
                     else ["--post-data", urlEncodePairs post]
-    (Nothing, Just hout, Just herr, phandle) <- createProcess $ (proc "wget"
+    (Nothing, Just hout, Just herr, phandle) <- liftIO $
+        createProcess $ (proc "wget"
             ((url ++ get') : post' ++ ["-O", "-"])
         ) { std_out = CreatePipe, std_err = CreatePipe }
-    exitCode <- waitForProcess phandle
+    exitCode <- liftIO $ waitForProcess phandle
     case exitCode of
-        ExitSuccess -> hGetContents hout >>= return . return
-        _ -> hGetContents herr >>= return . fail
+        ExitSuccess -> liftIO $ hGetContents hout
+        _ -> liftIO (hGetContents herr) >>= failure . WgetError
 
 urlEncodePairs :: [(String, String)] -> String
 urlEncodePairs = intercalate "&" . map urlEncodePair
