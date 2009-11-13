@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE FlexibleContexts #-}
 ---------------------------------------------------------
 -- |
 -- Module        : Network.HTTP.Wget
@@ -14,6 +15,7 @@
 ---------------------------------------------------------
 module Network.HTTP.Wget
     ( wget
+    , WgetException (..)
     ) where
 
 import System.Process
@@ -22,16 +24,16 @@ import System.IO
 import Numeric (showHex)
 import Data.List (intercalate)
 import Control.Monad.Trans
-import Control.Monad.Attempt.Class
+import Control.Monad.Failure
 import Control.Exception
 import Data.Generics
 
-newtype WgetError = WgetError String
+newtype WgetException = WgetException String
     deriving (Show, Typeable)
-instance Exception WgetError
+instance Exception WgetException
 
 -- | Get a response from the given URL with the given parameters.
-wget :: (MonadIO m, MonadAttempt m)
+wget :: (MonadIO m, MonadFailure WgetException m)
      => String -- ^ The URL.
      -> [(String, String)] -- ^ Get parameters.
      -> [(String, String)] -- ^ Post parameters. If empty, this will be a get request.
@@ -52,7 +54,7 @@ wget url get post = do
     exitCode <- liftIO $ waitForProcess phandle
     case exitCode of
         ExitSuccess -> liftIO $ hGetContents hout
-        _ -> liftIO (hGetContents herr) >>= failure . WgetError
+        _ -> liftIO (hGetContents herr) >>= failure . WgetException
 
 urlEncodePairs :: [(String, String)] -> String
 urlEncodePairs = intercalate "&" . map urlEncodePair
