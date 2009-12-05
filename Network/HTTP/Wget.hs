@@ -24,7 +24,7 @@ import System.IO
 import Numeric (showHex)
 import Data.List (intercalate)
 import Control.Monad.Trans
-import Control.Monad.Failure
+import Control.Failure
 import Control.Exception
 import Data.Generics
 
