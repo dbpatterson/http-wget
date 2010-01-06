@@ -30,7 +30,6 @@ import Control.Failure
 import Control.Exception
 import Data.Generics
 import Data.Char (isSpace)
-import Data.Text (strip)
 
 newtype WgetException = WgetException String
     deriving (Show, Typeable)
